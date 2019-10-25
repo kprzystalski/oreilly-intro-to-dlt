@@ -54,5 +54,7 @@ EXPOSE 3000
 
 WORKDIR /home/codete/
 RUN mkdir /home/codete/workshop/
+WORKDIR /home/codete/workshop/
+RUN git clone -b ethereum https://github.com/kprzystalski/oreilly-intro-to-d    lt
 
 CMD jupyter-notebook --ip=0.0.0.0 --NotebookApp.token='' --NotebookApp.password='' --no-browser --notebook-dir=/home/codete/workshop/
