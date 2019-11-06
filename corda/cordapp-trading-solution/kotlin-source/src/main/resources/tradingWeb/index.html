@@ -1,0 +1,253 @@
+<!--
+--------
+WARNING:
+--------
+
+THIS CODE IS ONLY MADE AVAILABLE FOR DEMONSTRATION PURPOSES AND IS NOT SECURE! DO NOT USE IN PRODUCTION!
+
+FOR SECURITY REASONS, USING A JAVASCRIPT WEB APP HOSTED VIA THE CORDA NODE IS NOT THE RECOMMENDED WAY TO INTERFACE
+WITH CORDA NODES! HOWEVER, FOR THIS PRE-ALPHA RELEASE IT'S A USEFUL WAY TO EXPERIMENT WITH THE PLATFORM AS IT ALLOWS
+YOU TO QUICKLY BUILD A UI FOR DEMONSTRATION PURPOSES.
+
+GOING FORWARD WE RECOMMEND IMPLEMENTING A STANDALONE WEB SERVER THAT AUTHORISES VIA THE NODE'S RPC INTERFACE. IN THE
+COMING WEEKS WE'LL WRITE A TUTORIAL ON HOW BEST TO DO THIS.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trading - CorDapp</title>
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/css/style.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/css/bootstrap-theme.min.css"  crossorigin="anonymous">
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script src="assets/js/angular.min.js"></script>
+    <script src="assets/js/ui-bootstrap-tpls.min.js"></script>
+    <script src="assets/js/ng-loading-overlay.min.js"></script>
+    <script src="js/angular-module.js"></script>
+</head>
+<body ng-app="tradingAppModule" ng-controller="TradingAppController as demoApp">
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="site-header">Trading - CorDapp</div>
+    </div>
+</nav>
+
+<!-- Trade Listing Start -->
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+               <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">{{demoApp.thisNode}}</a>
+                </div>
+                <button ng-click="demoApp.openModal()" type="button" class="btn btn-primary navbar-btn pull-right">Create Trade</button>
+            </div>
+    </div>
+    <div class="col-md-1"></div>
+</div>
+<!-- Trade Listing Ends -->
+
+<!-- Trade Listing Start -->
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+        <div class="panel-group" id="accordion">
+            <div class="panel">
+                <div class="panel-primary">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Trades:</h4>
+                    </div>
+                </div>
+                <div>
+                    <div ng-show="!demoApp.trades.length" class="panel-body">Use the "Create Trade" button to send an Trade to a peer.</div>
+                    <div ng-repeat="trade in demoApp.trades" class="panel panel-default">
+                        <div class="bs-callout bs-callout-danger pull-right" >
+                            <h4 ng-class="(trade.tradeStatus=='ACCEPTED') ? 'trade-accepted' : 'trade-pending'">{{trade.tradeStatus}}</h4>
+                        </div>
+                        <div class="panel-body panel-border">
+                            <div class="tradeId"><h4>Trade ID - {{trade.linearId.id}}</h4></div>
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-xs-7">
+                                        <table class="table table-bordered">
+                                            <tr>
+                                               <th>Initiating Party</th>
+                                               <th>Counter Party</th>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <form class="form-horizontal">
+                                                        <div class="form-group">
+                                                            <label class="col-sm-4 control-label form-label">Organization</label>
+                                                            <div class="col-sm-8 form-data">
+                                                                <span>{{(trade.tradeStatus=='ACCEPTED') ? trade.counterParty : trade.initiatingParty}}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label class="col-sm-4 control-label form-label">Amount</label>
+                                                            <div class="col-sm-8 form-data">
+								    <span>{{trade.sellValue}}</span>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </td>
+                                                <td>
+                                                    <form class="form-horizontal">
+                                                        <div class="form-group">
+                                                            <label class="col-sm-4 control-label form-label">Organization</label>
+                                                            <div class="col-sm-8 form-data">
+                                                                <span>{{(trade.tradeStatus=='ACCEPTED') ? trade.initiatingParty : trade.counterParty}}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label class="col-sm-4 control-label form-label">Amount</label>
+                                                            <div class="col-sm-8 form-data">
+                                                                <span>{{trade.sellValue}}</span>
+                                                            </div>
+                                                        </div>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-xs-5">
+                                        <button ng-if="(demoApp.thisNode == trade.counterParty) && ( trade.tradeStatus=='PENDING') " ng-click="demoApp.openCounterTradeModal(trade)" type="button" class="btn btn-primary">Counter Trade</button>
+                                        <button ng-click="demoApp.openTransactionDetailsModal(trade.linearId.id)" type="button" class="btn btn-primary">Transaction Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-1"></div>
+</div>
+<!-- Trade Listing Ends -->
+
+<!-- Create Trade Content Start -->
+<script type="text/ng-template" id="createTradeModal.html">
+    <div class="modal-header">
+        <h4 class="modal-title">Create Trade</h4>
+    </div>
+    <form>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="counterparty" class="control-label">Counter Party:</label>
+                <select ng-model="modalInstance.form.counterparty" class="form-control" id="counterparty"
+                        ng-options="peer as peer for peer in modalInstance.peers">
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="sellValue" class="control-label">Sell Value (Int):</label>
+                <input type="text" ng-model="modalInstance.form.sellValue" class="form-control" id="sellValue">
+            </div>
+            <div class="form-group">
+                <label for="sellCurrency" class="control-label">Sell Currency:</label>
+                <select ng-model="modalInstance.form.sellCurrency" class="form-control" id="sellCurrency">
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="JPY">JPY</option>
+                    <option value="USD">USD</option>
+                </select>
+            </div>
+            <!--<div class="form-group">
+	    
+                <label for="buyValue" class="control-label">Buy Value (Int):</label>
+                <input type="text" ng-model="modalInstance.form.buyValue" class="form-control" id="buyValue">
+            </div>
+            <div class="form-group">
+                <label for="buyCurrency" class="control-label">Buy Currency :</label>
+                <select ng-model="modalInstance.form.buyCurrency" class="form-control" id="buyCurrency">
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="JPY">JPY</option>
+                    <option value="USD">USD</option>
+                </select>
+            </div>
+	    -->
+	    <div class="form-group">
+	    	<label for="longContract" class="control-label">Contract valid for (months):</label>
+		<input type="text" name="longContract" value="0" ng-model="modalInstance.form.longContract" class="form-control"/>
+	    </div>
+	    <div ng-show="modalInstance.formError" class="form-group">
+                <div class="alert alert-danger" role="alert">
+                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                    <span class="sr-only">Error:</span>
+                    Enter valid Trade parameters
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button ng-click="modalInstance.cancel()" type="button" class="btn btn-default">Close</button>
+            <button ng-click="modalInstance.create()" type="button" class="btn btn-primary">Create Trade</button>
+        </div>
+    </form>
+</script>
+<!-- Create Trade Content End -->
+
+<!-- Counter Trade Content Start -->
+<script type="text/ng-template" id="CounterTradeModal.html">
+    <div class="modal-header">
+        <h4 class="modal-title">Counter Trade</h4>
+    </div>
+    <form>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="control-label">Trade Details:</label>
+                <ul>
+                    <li>Initiator: {{modalInstance.trade.initiatingParty}}</li>
+                    <li>Counter party: {{modalInstance.trade.counterParty}}</li>
+                    <li>Amount: {{modalInstance.trade.sellValue}} {{modalInstance.trade.sellCurrency}}</li>
+                </ul>
+            </div>
+            <hr>
+            <div class="form-group">
+                <label class="control-label">Counter Trade Details:</label>
+                <ul>
+                    <li>Initiator: {{modalInstance.trade.counterParty}}</li>
+                    <li>Counter party: {{modalInstance.trade.initiatingParty}}</li>
+                    <li>Amount: {{modalInstance.trade.sellValue}} {{modalInstance.trade.sellCurrency}}</li>
+                </ul>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button ng-click="modalInstance.cancel()" type="button" class="btn btn-default">Close</button>
+            <button ng-click="modalInstance.counterTrade('REJECTED')" type="button" class="btn btn-danger">Reject Trade</button>
+            <button ng-click="modalInstance.counterTrade('ACCEPTED')" type="button" class="btn btn-primary">Create Counter Trade</button>
+        </div>
+    </form>
+</script>
+<!-- Counter Trade Content End -->
+
+<!-- Transaction Details Content Start -->
+<script type="text/ng-template" id="TransactionDetailsModal.html">
+    <div class="modal-header">
+        <h4 class="modal-title">Transaction Details</h4>
+    </div>
+    <form>
+        <div class="modal-body">
+            <div class="transactionDetail">
+                <pre>{{modalInstance.transactionDetails  | json }}</pre>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button ng-click="modalInstance.cancel()" type="button" class="btn btn-default">Close</button>
+        </div>
+    </form>
+</script>
+<!-- Transaction Details Content Start -->
+
+<!-- Message Content Start -->
+<script type="text/ng-template" id="messageContent.html">
+    <div class="modal-body" id="modal-body">
+        {{ modalInstanceTwo.message }}
+    </div>
+</script>
+<!-- Message Content End -->
+
+</body>
+</html>
