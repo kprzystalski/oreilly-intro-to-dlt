@@ -1,0 +1,12 @@
+OrdererOrgs:
+  - Name: Orderer
+    Domain: codete.com
+    Specs:
+      - Hostname: orderer
+PeerOrgs:
+  - Name: Org1
+    Domain: org1.codete.com
+    Template:
+      Count: 1
+    Users:
+      Count: 1
