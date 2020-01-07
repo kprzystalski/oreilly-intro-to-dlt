@@ -30,8 +30,7 @@ To access the bash on this container please find the container ID with ``docker 
 
 # Fabric
 
-We have the example based on Hyperledger Fabric. The installation of Hyperledger Fabric consist of one simple step:
-``curl -sSL http://bit.ly/2ysbOFE | bash -s -- 1.4.2 1.4.2 0.4.15``.
+We have the example based on Hyperledger Fabric. The installation of Hyperledger Fabric consist of one simple step, run the ``setup.sh`` script in the setup directory of the ``fabric`` branch of this repository. The second directory is the example chaincode. The 
 
 # Corda
 
